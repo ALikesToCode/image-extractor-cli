@@ -1,57 +1,105 @@
-# Image Extractor for PowerPoint, Word and PDF
+# Image Extractor CLI
 
-![powerpoint-pdf-image-extractor-github](https://github.com/user-attachments/assets/c177bb10-7da0-418d-8a74-15ea2fe3239f)
-
-
-A CLI tool to extract images from PowerPoint, Word and PDF files written in Python 🐍. This script extract all images in your .pptx, .docx, or .pdf file into a local folder. The benefit of using this tool to extract images over taking screenshots is that you get the highest resolution possible.
-
-## Use Cases
-
-- 1️⃣ Extract images from PowerPoint presentations
-- 2️⃣ Extract images from Word (doc/docx) documents
-- 3️⃣ Extract images from PDF files
+A command-line utility for extracting images from PDF, DOCX, and PPTX files.
 
 ## Features
 
-- ⬇️ Extract and download all images within a PowerPoint, Word or PDF
-- 📁 Supports all image file types (jpg, png, jp2, gif, tiff, ...)
-- 📑 Supports extracing images from: PowerPoint (.pptx, .ppt), Word (.docx, .doc) and PDF (.pdf)
-- 📸 High resolution images: Images are not compressed
-- 📀 Runs locally: Keep your data
+- Extract images from multiple document formats:
+  - PDF files using `pypdf`
+  - DOCX files using `python-docx`
+  - PPTX files using `python-pptx`
+- Automatically generate unique filenames for extracted images
+- Handle various image formats (JPG, PNG, GIF, BMP, TIFF, etc.)
+- Convert JP2 images to PNG format
+- Parallel processing for faster extraction
+- Modular architecture for easy extension to additional formats
+- Pure Python implementation (no subprocess dependencies)
 
-## Setup
+## Installation
 
-Create a virtual Python env
-```
-python3 -m venv env
-```
+### From PyPI (recommended)
 
-Activate the virtual env
-```
-source env/bin/activate
-```
-
-Using [pip](https://pip.pypa.io/en/stable/installation/) install all dependencies
-```
-pip3 install -r requirements.txt
+```bash
+pip install image-extractor
 ```
 
-## Requirements
+### From Source
 
-You need to have [7Zip](https://www.7-zip.org) installed because under the hood `unzip` is used to unarchive and archive the pptx files.
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/image-extractor-cli.git
+cd image-extractor-cli
+
+# Install in development mode
+pip install -e .
+```
 
 ## Usage
 
+### Command Line
+
+```bash
+# Basic usage
+image-extractor document.pdf
+
+# Specify output directory
+image-extractor presentation.pptx -o ./extracted_images
+
+# Enable verbose logging
+image-extractor document.docx -v
 ```
-python3 image_extractor.py <INPUT_FILE_PATH>
+
+### As a Python Library
+
+```python
+from image_extractor import ImageExtractor
+
+# Extract images from a document
+extracted_files = ImageExtractor.extract("document.pdf", "output_directory")
+
+# Print the paths of extracted images
+for image_path in extracted_files:
+    print(f"Extracted: {image_path}")
 ```
 
-_⚠️ Note:_ All images of the PowerPoint, PDF or Word document will be extracted to a folder called `extracted_images` in the same folder as the original document.
+## Command-line Arguments
 
-## License 
+- `file_path`: Path to the document file (required)
+- `-o, --output-dir`: Directory to save extracted images (default: 'extracted_images' in same directory as input file)
+- `-v, --verbose`: Enable verbose logging
 
-Apache License 2.0: See `LICENSE` file
+## Requirements
 
-## Author
+- Python 3.7+
+- Pillow (for image processing)
+- pypdf (for PDF extraction)
+- python-docx (for DOCX extraction)
+- python-pptx (for PPTX extraction)
 
-Written and maintained by [SlideSpeak.co](https://slidespeak.co)
+## Extending
+
+The project is designed to be easily extensible with new document formats:
+
+1. Create a new handler class in `image_extractor/handlers/`
+2. Extend `ExtractorHandler` base class
+3. Implement the `extract` method
+4. Register the handler with `@ExtractorRegistry.register(['.ext'])`
+
+Example:
+
+```python
+from ..handlers.base import ExtractorHandler, ExtractorRegistry
+from ..utils.image_processing import save_image
+
+@ExtractorRegistry.register(['.odt'])
+class OdtExtractor(ExtractorHandler):
+    """Handler for extracting images from ODT files."""
+    
+    def extract(self, source_path: Path, output_path: Path) -> List[Path]:
+        # Implementation here
+        pass
+```
+
+## License
+
+MIT
